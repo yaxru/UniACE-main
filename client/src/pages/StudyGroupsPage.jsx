@@ -2,19 +2,6 @@ import { useState, useEffect } from "react";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
-const FACULTY_COLORS = {
-  IT: "bg-blue-100 text-blue-700",
-  Business: "bg-yellow-100 text-yellow-700",
-  Engineering: "bg-orange-100 text-orange-700",
-  Science: "bg-green-100 text-green-700",
-};
-
-const METHOD_COLORS = {
-  Online: "bg-purple-100 text-purple-700",
-  "In-person": "bg-pink-100 text-pink-700",
-  Both: "bg-indigo-100 text-indigo-700",
-};
-
 // ── Group Card ─────────────────────────────────────────────────────────────────
 function GroupCard({ group, userId, onJoin, onLeave, joining }) {
   const isMember = group.members.some(
@@ -25,22 +12,25 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
     group.createdBy === userId || group.createdBy?.toString() === userId;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 flex flex-col gap-3 hover:border-gray-300 transition-colors">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-base truncate">
+          <h3 className="font-medium text-gray-900 text-base truncate">
             {group.name}
           </h3>
           {group.description && (
-            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+            <p className="text-sm text-gray-500/80 mt-0.5 line-clamp-2">
               {group.description}
             </p>
           )}
         </div>
-        {/* Member count badge */}
         <span
-          className={`shrink-0 text-xs font-semibold px-2 py-1 rounded-full ${isFull ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"}`}
+          className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border ${
+            isFull
+              ? "bg-red-50 text-red-500 border-red-200"
+              : "bg-gray-50 text-gray-500 border-gray-200"
+          }`}
         >
           {group.members.length}/8
         </span>
@@ -49,21 +39,17 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
       {/* Tags */}
       <div className="flex flex-wrap gap-1.5">
         {group.faculty && (
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${FACULTY_COLORS[group.faculty] || "bg-gray-100 text-gray-600"}`}
-          >
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 border border-gray-200">
             {group.faculty}
           </span>
         )}
         {group.batch && (
-          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600">
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 border border-gray-200">
             {group.batch}
           </span>
         )}
         {group.studyMethod && (
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${METHOD_COLORS[group.studyMethod] || "bg-gray-100 text-gray-600"}`}
-          >
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 border border-gray-200">
             {group.studyMethod}
           </span>
         )}
@@ -75,7 +61,7 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
           {group.modules.map((m) => (
             <span
               key={m}
-              className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono"
+              className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded font-mono border border-zinc-200"
             >
               {m}
             </span>
@@ -90,7 +76,7 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
             <div
               key={m._id || i}
               title={m.name || m.username}
-              className="w-7 h-7 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center border-2 border-white font-medium uppercase"
+              className="w-7 h-7 rounded-full bg-zinc-800 text-white text-xs flex items-center justify-center border-2 border-white font-medium uppercase"
             >
               {(m.name || m.username || "?")[0]}
             </div>
@@ -104,31 +90,20 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
         {group.members.length === 0 && (
           <span className="text-xs text-gray-400">No members yet</span>
         )}
+        {group.score !== undefined && group.score > 0 && (
+          <span className="ml-auto text-xs text-gray-400">
+            {group.score} match pts
+          </span>
+        )}
       </div>
 
-      {/* Match score badge */}
-      {group.score !== undefined && group.score > 0 && (
-        <div className="flex items-center gap-1">
-          <svg
-            className="w-3.5 h-3.5 text-indigo-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          <span className="text-xs text-indigo-600 font-medium">
-            {group.score} match points
-          </span>
-        </div>
-      )}
-
-      {/* Action button */}
+      {/* Action */}
       <div className="mt-auto pt-1">
         {isMember ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+            <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
               <svg
-                className="w-4 h-4"
+                className="w-3.5 h-3.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -146,21 +121,19 @@ function GroupCard({ group, userId, onJoin, onLeave, joining }) {
               <button
                 onClick={() => onLeave(group._id)}
                 disabled={joining === group._id}
-                className="text-xs text-red-500 hover:text-red-700 underline disabled:opacity-50"
+                className="text-xs text-red-400 hover:text-red-600 underline disabled:opacity-50"
               >
                 Leave
               </button>
             )}
           </div>
         ) : isFull ? (
-          <span className="text-xs text-gray-400 font-medium">
-            Group is full
-          </span>
+          <span className="text-xs text-gray-400">Group is full</span>
         ) : (
           <button
             onClick={() => onJoin(group._id)}
             disabled={joining === group._id}
-            className="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="w-full h-9 rounded-full bg-zinc-900 text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {joining === group._id ? "Joining..." : "Join Group"}
           </button>
@@ -205,13 +178,21 @@ function CreateGroupModal({ onClose, onCreate, user }) {
     }
   }
 
+  const inputCls =
+    "tw-page w-full bg-transparent border border-gray-300/60 h-11 rounded-full px-5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-gray-400 transition-colors";
+  const selectCls =
+    "tw-page w-full bg-white border border-gray-300/60 h-11 rounded-full px-5 text-sm text-gray-700 outline-none focus:border-gray-400 transition-colors";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">
-            Create Study Group
-          </h2>
+    <div className="tw-page fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md p-7 border border-gray-200">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl text-gray-900 font-medium">Create Group</h2>
+            <p className="text-sm text-gray-500/80 mt-1">
+              Set up your study group
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -232,111 +213,83 @@ function CreateGroupModal({ onClose, onCreate, user }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Group Name *
-            </label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. SE3040 Study Squad"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="What will this group focus on?"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-20 resize-none"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Group name *"
+            className={inputCls}
+          />
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Description (optional)"
+            className="tw-page w-full bg-transparent border border-gray-300/60 rounded-2xl px-5 py-3 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-gray-400 transition-colors h-20 resize-none"
+          />
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Faculty
-              </label>
-              <select
-                name="faculty"
-                value={form.faculty}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Any</option>
-                <option>IT</option>
-                <option>Business</option>
-                <option>Engineering</option>
-                <option>Science</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Batch
-              </label>
-              <select
-                name="batch"
-                value={form.batch}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Any</option>
-                <option>Weekday</option>
-                <option>Weekend</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Study Method
-            </label>
             <select
-              name="studyMethod"
-              value={form.studyMethod}
+              name="faculty"
+              value={form.faculty}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={selectCls}
             >
-              <option value="">Any</option>
-              <option>Online</option>
-              <option>In-person</option>
-              <option>Both</option>
+              <option value="">Any Faculty</option>
+              <option>IT</option>
+              <option>Business</option>
+              <option>Engineering</option>
+              <option>Science</option>
+            </select>
+            <select
+              name="batch"
+              value={form.batch}
+              onChange={handleChange}
+              className={selectCls}
+            >
+              <option value="">Any Batch</option>
+              <option>Weekday</option>
+              <option>Weekend</option>
             </select>
           </div>
+          <select
+            name="studyMethod"
+            value={form.studyMethod}
+            onChange={handleChange}
+            className={selectCls}
+          >
+            <option value="">Any Study Method</option>
+            <option>Online</option>
+            <option>In-person</option>
+            <option>Both</option>
+          </select>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Modules
-            </label>
             <input
               name="modules"
               value={form.modules}
               onChange={handleChange}
-              placeholder="e.g. SE3040, SE3050, IT3060"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Modules (e.g. SE3040, IT3060)"
+              className={inputCls}
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400 mt-1.5 pl-2">
               Separate module codes with commas
             </p>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 mt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+              className="flex-1 h-11 rounded-full border border-gray-300/60 text-gray-600 text-sm hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="flex-1 h-11 rounded-full bg-zinc-900 text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {loading ? "Creating..." : "Create Group"}
             </button>
@@ -414,28 +367,25 @@ export default function StudyGroupsPage() {
   }
 
   const userId = user?.id || user?._id;
-  const tabData = {
-    Suggested: suggested,
-    "My Groups": mine,
-    "All Groups": all,
-  };
-  const groups = tabData[activeTab] || [];
+  const groups =
+    { Suggested: suggested, "My Groups": mine, "All Groups": all }[activeTab] ||
+    [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Page header */}
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
+    <div className="tw-page min-h-screen bg-white">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Study Groups</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Find and join study groups matched to your profile. Max 8 members
-              per group.
+            <h1 className="text-4xl text-gray-900 font-medium">Study Groups</h1>
+            <p className="text-sm text-gray-500/90 mt-2">
+              Find and join groups matched to your profile. Max 8 members per
+              group.
             </p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-5 h-11 rounded-full bg-zinc-900 text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <svg
               className="w-4 h-4"
@@ -456,9 +406,9 @@ export default function StudyGroupsPage() {
 
         {/* Onboarding nudge */}
         {user && !user.onboardingComplete && (
-          <div className="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-            <strong>Complete your profile</strong> to get personalised study
-            group recommendations.{" "}
+          <div className="mb-6 bg-amber-50 border border-amber-200/80 rounded-2xl px-5 py-4 text-sm text-amber-800">
+            <strong>Complete your profile</strong> to get personalised
+            recommendations.{" "}
             <a href="/onboarding" className="underline font-medium">
               Finish onboarding →
             </a>
@@ -466,26 +416,26 @@ export default function StudyGroupsPage() {
         )}
 
         {error && (
-          <div className="mb-5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+          <div className="mb-6 bg-red-50 border border-red-200/80 rounded-2xl px-5 py-4 text-sm text-red-600">
             {error}
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 w-fit">
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-full w-fit mb-8">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? "bg-white text-indigo-700 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {tab}
               {tab === "My Groups" && mine.length > 0 && (
-                <span className="ml-1.5 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 bg-gray-200 text-gray-600 text-xs px-1.5 py-0.5 rounded-full">
                   {mine.length}
                 </span>
               )}
@@ -493,21 +443,20 @@ export default function StudyGroupsPage() {
           ))}
         </div>
 
-        {/* Suggested description */}
         {activeTab === "Suggested" && (
-          <p className="text-xs text-gray-400 mb-4">
-            Groups are ranked by how well they match your faculty, batch, study
-            method, and current modules.
+          <p className="text-xs text-gray-400/90 mb-5">
+            Groups ranked by how well they match your faculty, batch, study
+            method, and modules.
           </p>
         )}
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+          <div className="flex items-center justify-center py-24">
+            <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin" />
           </div>
         ) : groups.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <svg
                 className="w-7 h-7 text-gray-400"
@@ -523,7 +472,7 @@ export default function StudyGroupsPage() {
                 />
               </svg>
             </div>
-            <p className="text-gray-500 font-medium">
+            <p className="text-gray-500/90 font-medium mb-4">
               {activeTab === "My Groups"
                 ? "You haven't joined any groups yet"
                 : activeTab === "Suggested"
@@ -532,7 +481,7 @@ export default function StudyGroupsPage() {
             </p>
             <button
               onClick={() => setShowCreate(true)}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              className="px-5 h-11 rounded-full bg-zinc-900 text-white text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Create a Group
             </button>
