@@ -4,7 +4,6 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
-const MAX_MEMBERS = 8;
 
 // Score how well a group matches a user's onboarding profile (higher = better match)
 function matchScore(group, user) {
@@ -37,7 +36,7 @@ router.get("/studygroups/suggest", auth, async (req, res) => {
     const groups = await StudyGroup.find().populate("members", "username name");
 
     const suggestions = groups
-      .filter((g) => g.members.length < MAX_MEMBERS)
+      .filter((g) => g.members.length < g.maxMembers)
       .filter((g) => !g.members.some((m) => m._id.toString() === userId))
       .map((g) => ({ ...g.toObject(), score: matchScore(g, user) }))
       .sort((a, b) => b.score - a.score || a.members.length - b.members.length);
@@ -74,10 +73,24 @@ router.get("/studygroups", auth, async (req, res) => {
 // POST /api/studygroups  — create a new group, creator is automatically added as first member
 router.post("/studygroups", auth, async (req, res) => {
   try {
-    const { name, description, faculty, batch, studyMethod, modules } =
-      req.body;
+    const {
+      name,
+      description,
+      faculty,
+      batch,
+      studyMethod,
+      modules,
+      maxMembers,
+    } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Group name is required" });
+    }
+
+    const parsedMax = parseInt(maxMembers, 10);
+    if (isNaN(parsedMax) || parsedMax < 2 || parsedMax > 20) {
+      return res
+        .status(400)
+        .json({ message: "Max members must be between 2 and 20" });
     }
 
     const moduleList =
@@ -95,6 +108,7 @@ router.post("/studygroups", auth, async (req, res) => {
       batch,
       studyMethod,
       modules: moduleList,
+      maxMembers: parsedMax,
       members: [req.user.id],
       createdBy: req.user.id,
     });
@@ -113,10 +127,12 @@ router.post("/studygroups/:id/join", auth, async (req, res) => {
     const group = await StudyGroup.findById(req.params.id);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (group.members.length >= MAX_MEMBERS) {
+    if (group.members.length >= group.maxMembers) {
       return res
         .status(400)
-        .json({ message: "This group is full (max 8 members)" });
+        .json({
+          message: `This group is full (max ${group.maxMembers} members)`,
+        });
     }
 
     const alreadyMember = group.members.some(

@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
-// ── Shared tag styles ──────────────────────────────────────────────────────────
+// Shared tag styles 
 const TAG_CLS = "text-xs px-2.5 py-1 rounded-full font-medium border";
-// Faculty → amber tint
-// Batch   → dark/black sage
-// Method  → muted amber-stone
+
 
 function FacultyTag({ value }) {
   if (!value) return null;
@@ -33,12 +31,12 @@ function MethodTag({ value }) {
   );
 }
 
-// ── Group List Row (left panel) ────────────────────────────────────────────────
+//  Group List Row (left panel) 
 function GroupRow({ group, userId, selected, onClick }) {
   const isMember = group.members.some(
     (m) => m._id === userId || m._id?.toString() === userId,
   );
-  const isFull = group.members.length >= 8;
+  const isFull = group.members.length >= (group.maxMembers ?? 8);
 
   return (
     <button
@@ -66,7 +64,7 @@ function GroupRow({ group, userId, selected, onClick }) {
                 : "bg-gray-100 text-gray-500"
           }`}
         >
-          {group.members.length}/8
+          {group.members.length}/{group.maxMembers ?? 8}
         </span>
       </div>
       <div className="flex flex-wrap gap-1">
@@ -103,12 +101,23 @@ function GroupRow({ group, userId, selected, onClick }) {
             ✓ Joined
           </span>
         )}
+        {!isMember && group.score !== undefined && group.score > 0 && (
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              selected
+                ? "bg-white text-amber-700"
+                : "bg-amber-600 text-amber-50"
+            }`}
+          >
+            ★ {group.score} match
+          </span>
+        )}
       </div>
     </button>
   );
 }
 
-// ── Group Detail Panel (right panel) ──────────────────────────────────────────
+//  Group Detail Panel (right panel) 
 function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
   if (!group) {
     return (
@@ -138,7 +147,8 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
   const isMember = group.members.some(
     (m) => m._id === userId || m._id?.toString() === userId,
   );
-  const isFull = group.members.length >= 8;
+  const maxMembers = group.maxMembers ?? 8;
+  const isFull = group.members.length >= maxMembers;
   const isCreator =
     group.createdBy === userId || group.createdBy?.toString() === userId;
 
@@ -159,6 +169,11 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
       <div className="px-8 pt-8 pb-6 border-b border-gray-100">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1">
+            {group.score !== undefined && group.score > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border bg-amber-100 text-amber-900 border-amber-300 mb-2">
+                ★ {group.score} profile match
+              </span>
+            )}
             <h2 className="text-2xl font-semibold text-gray-900 leading-tight">
               {group.name}
             </h2>
@@ -180,13 +195,13 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
               <span
                 className={`text-sm font-bold ${isFull ? "text-red-600" : "text-emerald-700"}`}
               >
-                {group.members.length}/8
+                {group.members.length}/{maxMembers}
               </span>
             </div>
             <span
               className={`text-xs font-medium ${isFull ? "text-red-500" : "text-emerald-600"}`}
             >
-              {isFull ? "Full" : `${8 - group.members.length} open`}
+              {isFull ? "Full" : `${maxMembers - group.members.length} open`}
             </span>
           </div>
         </div>
@@ -196,11 +211,6 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
           <FacultyTag value={group.faculty} />
           <BatchTag value={group.batch} />
           <MethodTag value={group.studyMethod} />
-          {group.score !== undefined && group.score > 0 && (
-            <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-amber-100 text-amber-900 border-amber-300">
-              ★ {group.score} match
-            </span>
-          )}
         </div>
       </div>
 
@@ -307,7 +317,7 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
   );
 }
 
-// ── Create Group Modal ─────────────────────────────────────────────────────────
+//  Create Group Modal 
 function CreateGroupModal({ onClose, onCreate, user }) {
   const [form, setForm] = useState({
     name: "",
@@ -316,6 +326,7 @@ function CreateGroupModal({ onClose, onCreate, user }) {
     batch: user?.batch || "",
     studyMethod: user?.studyMethod || "",
     modules: user?.currentModules?.join(", ") || "",
+    maxMembers: 8,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -328,6 +339,11 @@ function CreateGroupModal({ onClose, onCreate, user }) {
     e.preventDefault();
     if (!form.name.trim()) {
       setError("Group name is required");
+      return;
+    }
+    const max = parseInt(form.maxMembers, 10);
+    if (isNaN(max) || max < 2 || max > 20) {
+      setError("Max members must be between 2 and 20");
       return;
     }
     setLoading(true);
@@ -427,6 +443,23 @@ function CreateGroupModal({ onClose, onCreate, user }) {
             <option>In-person</option>
             <option>Both</option>
           </select>
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-gray-600 whitespace-nowrap pl-1">
+              Max members
+            </label>
+            <input
+              name="maxMembers"
+              type="number"
+              min={2}
+              max={20}
+              value={form.maxMembers}
+              onChange={handleChange}
+              className={inputCls}
+            />
+            <span className="text-xs text-gray-400 whitespace-nowrap">
+              2 – 20
+            </span>
+          </div>
           <div>
             <input
               name="modules"
@@ -464,7 +497,7 @@ function CreateGroupModal({ onClose, onCreate, user }) {
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+//  Main Page 
 const TABS = ["Suggested", "My Groups", "All Groups"];
 
 export default function StudyGroupsPage() {
@@ -546,7 +579,7 @@ export default function StudyGroupsPage() {
 
   return (
     <div
-      className="tw-page flex flex-col max-w-7xl mx-auto bg-white  "
+      className="tw-page flex flex-col max-w-7xl mx-auto bg-white my-12  "
       style={{ height: "calc(100vh - 64px)" }}
     >
       {/* Top bar */}
@@ -626,7 +659,7 @@ export default function StudyGroupsPage() {
       {/* Body: left list + right detail */}
       <div className="flex flex-1 overflow-hidden pt-8">
         {/* Left list panel */}
-        <div className="w-80 shrink-0 border-r border-gray-100 flex flex-col overflow-hidden bg-white">
+        <div className="w-100 shrink-0 border-r border-gray-100 flex flex-col overflow-hidden bg-white">
           {activeTab === "Suggested" && (
             <p className="text-xs text-gray-400 px-4 pt-4 pb-1">
               Ranked by faculty, batch, study method &amp; modules match.

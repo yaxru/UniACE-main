@@ -8,6 +8,7 @@ const studyGroupSchema = new mongoose.Schema(
     batch: { type: String, trim: true, default: "" },
     studyMethod: { type: String, trim: true, default: "" },
     modules: { type: [String], default: [] },
+    maxMembers: { type: Number, default: 8, min: 2, max: 20 },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
