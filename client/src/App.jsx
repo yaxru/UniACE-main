@@ -32,14 +32,21 @@ function GuestRoute({ children }) {
   return !token ? children : <Navigate to="/" replace />;
 }
 
-const NO_CONTAINER_ROUTES = ["/login", "/register", "/onboarding"];
+const NO_NAVBAR_ROUTES = ["/login", "/register", "/onboarding"];
+const NO_CONTAINER_ROUTES = [
+  "/login",
+  "/register",
+  "/onboarding",
+  "/study-groups",
+];
 
 function AppLayout() {
   const location = useLocation();
+  const noNavbar = NO_NAVBAR_ROUTES.includes(location.pathname);
   const noContainer = NO_CONTAINER_ROUTES.includes(location.pathname);
   return (
     <>
-      {!noContainer && <Navbar />}
+      {!noNavbar && <Navbar />}
       <main className={noContainer ? undefined : "container"}>
         <Routes>
           <Route
