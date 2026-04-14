@@ -579,11 +579,11 @@ export default function StudyGroupsPage() {
 
   return (
     <div
-      className="tw-page flex flex-col max-w-7xl mx-auto bg-white my-12  "
+      className="tw-page flex flex-col max-w-7xl mx-auto bg-white my-12 rounded shadow-sm overflow-hidden"
       style={{ height: "calc(100vh - 64px)" }}
     >
       {/* Top bar */}
-      <div className="shrink-0 px-4 py-8 border-b border-gray-100 bg-white">
+      <div className="shrink-0 px-4 py-4 border-b border-gray-200  bg-white">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
           <div>
             <h1 className="text-3xl text-gray-900 font-semibold">

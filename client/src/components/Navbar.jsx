@@ -33,8 +33,8 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="w-full bg-white border-b border-stone-200">
-      <nav className="max-w-[85rem] mx-auto flex flex-wrap md:flex-nowrap md:items-center md:justify-between gap-2 py-2 px-4 sm:px-6 lg:px-8">
+    <header className=" w-full bg-white sticky top-0 z-10 border-b border-stone-300">
+      <nav className="max-w-7xl mx-auto flex flex-wrap md:flex-nowrap md:items-center md:justify-between gap-2 py-4 px-4 ">
         {/* Brand + Toggle Row */}
         <div className="flex justify-between items-center w-full md:w-auto">
           <Link className="font-semibold " to="/">
