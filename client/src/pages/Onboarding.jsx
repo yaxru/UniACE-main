@@ -76,12 +76,8 @@ function StepperSidebar({ step, labels, descriptions }) {
 function StepPersonal({ form, onChange }) {
   return (
     <div>
-      <h2 className="text-3xl text-gray-900 font-medium  ">
-        Personal Info
-      </h2>
-      <p className="text-sm text-gray-500/90 mt-3  ">
-        Tell us about yourself
-      </p>
+      <h2 className="text-3xl text-gray-900 font-medium  ">Personal Info</h2>
+      <p className="text-sm text-gray-500/90 mt-3  ">Tell us about yourself</p>
 
       <div className="flex items-center w-full bg-transparent border border-gray-300/60 h-12 rounded-full overflow-hidden pl-6 gap-2 mt-8">
         <svg
@@ -196,9 +192,7 @@ function StepPersonal({ form, onChange }) {
 function StepAcademic({ form, onChange }) {
   return (
     <div>
-      <h2 className="text-3xl text-gray-900 font-medium  ">
-        Academic Details
-      </h2>
+      <h2 className="text-3xl text-gray-900 font-medium  ">Academic Details</h2>
       <p className="text-sm text-gray-500/90 mt-3  ">
         Your batch and current modules
       </p>
@@ -336,9 +330,7 @@ function StepStudy({ form, onChange }) {
       <h2 className="text-3xl text-gray-900 font-medium  ">
         Study Preferences
       </h2>
-      <p className="text-sm text-gray-500/90 mt-3  ">
-        How you like to learn
-      </p>
+      <p className="text-sm text-gray-500/90 mt-3  ">How you like to learn</p>
 
       <p className="text-xs text-gray-400 mt-8 mb-2">Preferred Study Method</p>
       <div className="flex gap-2 flex-wrap">
@@ -462,7 +454,38 @@ export default function Onboarding() {
     }
   }
 
+  function validate(currentStep) {
+    if (currentStep === 0) {
+      if (!form.name.trim()) return "Full name is required.";
+      if (form.itNumber.trim() && !/^(IT|LIC)\d+$/i.test(form.itNumber.trim()))
+        return "IT Number must start with IT or LIC followed by digits (e.g. IT21234567).";
+      if (!form.faculty) return "Please select your faculty.";
+      if (!form.year) return "Please select your year of study.";
+    }
+    if (currentStep === 1) {
+      if (!form.batch)
+        return "Please select your batch type (Weekday or Weekend).";
+    }
+    if (currentStep === 2) {
+      if (!form.onCampus) return "Please select your campus status.";
+      if (form.availability.length === 0)
+        return "Please select at least one available day.";
+    }
+    if (currentStep === 3) {
+      if (!form.studyMethod) return "Please select a preferred study method.";
+      if (!form.studyStyle) return "Please select a study style.";
+      if (form.studyGoals.length === 0)
+        return "Please select at least one study goal.";
+    }
+    return "";
+  }
+
   function next() {
+    const err = validate(step);
+    if (err) {
+      setError(err);
+      return;
+    }
     setError("");
     setStep((s) => s + 1);
   }
@@ -473,6 +496,11 @@ export default function Onboarding() {
   }
 
   async function handleFinish() {
+    const err = validate(step);
+    if (err) {
+      setError(err);
+      return;
+    }
     setLoading(true);
     setError("");
     try {
