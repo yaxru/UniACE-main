@@ -34,6 +34,7 @@ function GuestRoute({ children }) {
 
 const NO_NAVBAR_ROUTES = ["/login", "/register", "/onboarding"];
 const NO_CONTAINER_ROUTES = [
+  "/",
   "/login",
   "/register",
   "/onboarding",
