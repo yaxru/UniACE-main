@@ -39,6 +39,7 @@ const NO_CONTAINER_ROUTES = [
   "/register",
   "/onboarding",
   "/study-groups",
+  "/profile",
 ];
 
 function AppLayout() {
