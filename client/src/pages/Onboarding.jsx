@@ -480,10 +480,17 @@ export default function Onboarding() {
     return "";
   }
 
+  const isLic = /^LIC/i.test(form.itNumber.trim());
+
   function next() {
     const err = validate(step);
     if (err) {
       setError(err);
+      return;
+    }
+    // LIC users only need step 0 — submit immediately
+    if (isLic && step === 0) {
+      handleFinish();
       return;
     }
     setError("");
@@ -562,23 +569,25 @@ export default function Onboarding() {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-400">
-                {step + 1} of {STEP_LABELS.length}
-              </span>
-              {step < STEP_LABELS.length - 1 ? (
+              {!isLic && (
+                <span className="text-xs text-gray-400">
+                  {step + 1} of {STEP_LABELS.length}
+                </span>
+              )}
+              {isLic || step === STEP_LABELS.length - 1 ? (
+                <button
+                  onClick={isLic ? next : handleFinish}
+                  disabled={loading}
+                  className="px-6 py-2 rounded-full bg-zinc-900 text-white text-sm hover:opacity-90 disabled:opacity-50 transition-opacity font-medium"
+                >
+                  {loading ? "Saving..." : "Finish"}
+                </button>
+              ) : (
                 <button
                   onClick={next}
                   className="px-6 py-2 rounded-full bg-zinc-900 text-white text-sm hover:opacity-90 transition-opacity"
                 >
                   Next
-                </button>
-              ) : (
-                <button
-                  onClick={handleFinish}
-                  disabled={loading}
-                  className="px-6 py-2 rounded-full bg-zinc-900 text-white text-sm hover:opacity-90 disabled:opacity-50 transition-opacity font-medium"
-                >
-                  {loading ? "Saving..." : "Finish"}
                 </button>
               )}
             </div>

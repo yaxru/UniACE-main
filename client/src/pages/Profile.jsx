@@ -286,7 +286,7 @@ export default function Profile() {
                   onChange={handleChange}
                   className={selectCls}
                 >
-                  <option value="">— Select a role —</option>
+                  <option value="">- Select a role -</option>
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
                       {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -323,7 +323,7 @@ export default function Profile() {
                 Danger Zone
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Permanent — cannot be undone
+                Permanent - cannot be undone
               </p>
             </div>
             <div className="px-6 py-4 flex flex-col gap-3">
@@ -354,7 +354,7 @@ export default function Profile() {
                     Module Management
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    LIC account — manage modules for Year 1–4
+                    LIC account - manage modules for Year 1-4
                   </p>
                 </div>
                 <span className="shrink-0 text-xs px-2.5 py-1 rounded-full font-medium border bg-amber-50 text-amber-800 border-amber-200">
@@ -371,7 +371,7 @@ export default function Profile() {
                   to="/profile/modules"
                   className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-zinc-900 text-white text-sm font-medium hover:opacity-90 transition-opacity w-fit"
                 >
-                  Manage Modules (Year 1–4)
+                  Manage Modules (Year 1-4)
                 </Link>
               </div>
             </div>
