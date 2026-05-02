@@ -26,7 +26,7 @@ function matchScore(group, user) {
   return score;
 }
 
-// GET /api/studygroups/suggest  — groups ranked by match score, not already joined, not full
+// GET /api/studygroups/suggest  - groups ranked by match score, not already joined, not full
 router.get("/studygroups/suggest", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -47,7 +47,7 @@ router.get("/studygroups/suggest", auth, async (req, res) => {
   }
 });
 
-// GET /api/studygroups/mine  — groups the logged-in user is a member of
+// GET /api/studygroups/mine  - groups the logged-in user is a member of
 router.get("/studygroups/mine", auth, async (req, res) => {
   try {
     const groups = await StudyGroup.find({ members: req.user.id }).populate(
@@ -60,7 +60,7 @@ router.get("/studygroups/mine", auth, async (req, res) => {
   }
 });
 
-// GET /api/studygroups  — all groups
+// GET /api/studygroups  - all groups
 router.get("/studygroups", auth, async (req, res) => {
   try {
     const groups = await StudyGroup.find().populate("members", "username name");
@@ -70,7 +70,7 @@ router.get("/studygroups", auth, async (req, res) => {
   }
 });
 
-// POST /api/studygroups  — create a new group, creator is automatically added as first member
+// POST /api/studygroups  - create a new group, creator is automatically added as first member
 router.post("/studygroups", auth, async (req, res) => {
   try {
     const {
@@ -121,7 +121,7 @@ router.post("/studygroups", auth, async (req, res) => {
   }
 });
 
-// POST /api/studygroups/:id/join  — join a group
+// POST /api/studygroups/:id/join  - join a group
 router.post("/studygroups/:id/join", auth, async (req, res) => {
   try {
     const group = await StudyGroup.findById(req.params.id);
@@ -151,7 +151,7 @@ router.post("/studygroups/:id/join", auth, async (req, res) => {
   }
 });
 
-// DELETE /api/studygroups/:id/leave  — leave a group
+// DELETE /api/studygroups/:id/leave  - leave a group
 router.delete("/studygroups/:id/leave", auth, async (req, res) => {
   try {
     const group = await StudyGroup.findById(req.params.id);
