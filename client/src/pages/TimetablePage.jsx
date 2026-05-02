@@ -97,6 +97,17 @@ function getExamPrepDays(studyPreference) {
 }
 
 function getAssignmentLeadDays(studyPreference) {
+  if (studyPreference && typeof studyPreference === 'object') {
+    const assignmentType = studyPreference.assignmentType || 'general';
+    const preference = studyPreference.studyPreference || 'neutral';
+
+    if (assignmentType === 'coding-project') return 14;
+    if (assignmentType === 'document') return 7;
+    if (preference === 'hard') return 10;
+    if (preference === 'easy') return 5;
+    return 7;
+  }
+
   if (studyPreference === 'hard') return 10;
   if (studyPreference === 'easy') return 5;
   return 7;
@@ -171,7 +182,7 @@ export default function TimetablePage() {
   const [plannerModal, setPlannerModal] = useState(null);
   const [plannerModalSaving, setPlannerModalSaving] = useState(false);
   const [plannerConfirm, setPlannerConfirm] = useState(null);
-  const studyPlanStorageKey = `quizbee-study-plan:${String(user?.id || 'anon')}`;
+  const studyPlanStorageKey = `uniace-study-plan:${String(user?.id || 'anon')}`;
 
   const lectureModules = Array.isArray(modulesByYear?.[lectureForm.yearKey])
     ? modulesByYear[lectureForm.yearKey].filter(Boolean)
@@ -323,6 +334,7 @@ export default function TimetablePage() {
         yearKey: item.yearKey,
         moduleName: item.moduleName,
         assignmentName: item.assignmentName,
+        assignmentType: item.assignmentType || 'general',
         dueDate: item.dueDate,
         timeSlot: item.timeSlot,
         progress: item.progress,
@@ -460,28 +472,34 @@ export default function TimetablePage() {
 
         if (!localDate || localDate < todayStart) continue;
 
-        const assignmentLeadDays = getAssignmentLeadDays(assignment.studyPreference);
-
-        const startDate = new Date(localDate);
-        startDate.setDate(startDate.getDate() - assignmentLeadDays);
-        if (startDate < todayStart || startDate > lookAheadEnd) continue;
-
-        const weekday = startDate.toLocaleDateString(undefined, { weekday: 'long' });
-        grouped.get(weekday)?.push({
-          id: `assignment-start-${row.key}-${assignment.assignmentName}-${assignment.dueDate}`,
-          type: 'study-assignment',
-          timeSlot: assignment.timeSlot || '5:00 PM - 6:30 PM',
-          moduleName: row.moduleName,
-          yearLabel: row.yearLabel,
-          examLabel: `Focus: Start ${assignment.assignmentName} (${assignmentLeadDays} days before deadline)`,
-          plannedDate: startDate.toISOString(),
-          targetDate: assignment.dueDate,
-          targetLabel: 'Due Date',
-          sourceId: assignment._id,
-          yearKey: assignment.yearKey,
-          assignmentName: assignment.assignmentName,
-          studyPreference: assignment.studyPreference || 'neutral',
+        const assignmentLeadDays = getAssignmentLeadDays({
+          assignmentType: assignment.assignmentType,
+          studyPreference: assignment.studyPreference,
         });
+
+        for (let offset = assignmentLeadDays; offset >= 1; offset -= 1) {
+          const focusDate = new Date(localDate);
+          focusDate.setDate(focusDate.getDate() - offset);
+          if (focusDate < todayStart || focusDate > lookAheadEnd) continue;
+
+          const weekday = focusDate.toLocaleDateString(undefined, { weekday: 'long' });
+          grouped.get(weekday)?.push({
+            id: `assignment-focus-${row.key}-${assignment.assignmentName}-${assignment.dueDate}-${offset}`,
+            type: 'study-assignment',
+            timeSlot: assignment.timeSlot || '17:00 - 18:30',
+            moduleName: row.moduleName,
+            yearLabel: row.yearLabel,
+            examLabel: `Focus: ${assignment.assignmentName} (${offset} day${offset === 1 ? '' : 's'} left)`,
+            plannedDate: focusDate.toISOString(),
+            targetDate: assignment.dueDate,
+            targetLabel: 'Due Date',
+            sourceId: assignment._id,
+            yearKey: assignment.yearKey,
+            assignmentName: assignment.assignmentName,
+            assignmentType: assignment.assignmentType || 'general',
+            studyPreference: assignment.studyPreference || 'neutral',
+          });
+        }
       }
     }
 
@@ -643,31 +661,37 @@ export default function TimetablePage() {
         const isCompleted = (assignment.progress || 'Not Started') === 'Completed';
         if (!dueDate || dueDate < todayStart || isCompleted) continue;
 
-        const assignmentLeadDays = getAssignmentLeadDays(assignment.studyPreference);
-
-        const startDate = new Date(dueDate);
-        startDate.setDate(startDate.getDate() - assignmentLeadDays);
-        if (!inCurrentWeek(startDate)) continue;
-
-        const dayName = startDate.toLocaleDateString(undefined, { weekday: 'long' });
-        const dayBucket = dayByName.get(dayName);
-        if (!dayBucket) continue;
-
-        dayBucket.entries.push({
-          id: `assignment-calendar-${row.key}-${assignment.assignmentName}-${assignment.dueDate}`,
-          type: 'study-assignment',
-          timeSlot: assignment.timeSlot || '5:00 PM - 6:30 PM',
-          moduleName: row.moduleName,
-          yearLabel: row.yearLabel,
-          examLabel: `Focus: Start ${assignment.assignmentName} (${assignmentLeadDays} days before deadline)`,
-          targetDate: assignment.dueDate,
-          targetLabel: 'Due Date',
-          plannedDate: startDate.toISOString(),
-          sourceId: assignment._id,
-          yearKey: assignment.yearKey,
-          assignmentName: assignment.assignmentName,
-          studyPreference: assignment.studyPreference || 'neutral',
+        const assignmentLeadDays = getAssignmentLeadDays({
+          assignmentType: assignment.assignmentType,
+          studyPreference: assignment.studyPreference,
         });
+
+        for (let offset = assignmentLeadDays; offset >= 1; offset -= 1) {
+          const focusDate = new Date(dueDate);
+          focusDate.setDate(focusDate.getDate() - offset);
+          if (!inCurrentWeek(focusDate)) continue;
+
+          const dayName = focusDate.toLocaleDateString(undefined, { weekday: 'long' });
+          const dayBucket = dayByName.get(dayName);
+          if (!dayBucket) continue;
+
+          dayBucket.entries.push({
+            id: `assignment-calendar-${row.key}-${assignment.assignmentName}-${assignment.dueDate}-${offset}`,
+            type: 'study-assignment',
+            timeSlot: assignment.timeSlot || '17:00 - 18:30',
+            moduleName: row.moduleName,
+            yearLabel: row.yearLabel,
+            examLabel: `Focus: ${assignment.assignmentName} (${offset} day${offset === 1 ? '' : 's'} left)`,
+            targetDate: assignment.dueDate,
+            targetLabel: 'Due Date',
+            plannedDate: focusDate.toISOString(),
+            sourceId: assignment._id,
+            yearKey: assignment.yearKey,
+            assignmentName: assignment.assignmentName,
+            assignmentType: assignment.assignmentType || 'general',
+            studyPreference: assignment.studyPreference || 'neutral',
+          });
+        }
       }
     }
 

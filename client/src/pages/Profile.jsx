@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,7 +32,8 @@ function normalizeModulesByYear(input) {
 }
 
 export default function Profile() {
-  const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
+  const { user, updateUser, logout } = useAuth();
   const [form, setForm]       = useState({ name: '', phone: '', itNumber: '', role: '' });
   const [savedItNumber, setSavedItNumber] = useState('');
   const [communityModules, setCommunityModules] = useState({ ...EMPTY_MODULES });
@@ -40,6 +41,7 @@ export default function Profile() {
   const [modulesLoading, setModulesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error,   setError]   = useState('');
 
@@ -129,6 +131,26 @@ export default function Profile() {
         [yearKey]: next,
       };
     });
+  }
+
+  async function handleDeleteProfile() {
+    const confirmed = window.confirm(
+      'Delete your profile permanently? This will remove your questions, comments, and inbox messages.'
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setSuccess('');
+    setError('');
+
+    try {
+      await api.delete('/profile');
+      logout();
+      navigate('/login', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete profile.');
+      setDeleting(false);
+    }
   }
 
   const hasLicItNumber = savedItNumber.trim().toUpperCase().startsWith('LIC');
@@ -245,9 +267,22 @@ export default function Profile() {
         {success && <p className="success-msg">{success}</p>}
         {error   && <p className="error-msg">{error}</p>}
 
-        <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
+        <button type="submit" className="btn btn-primary btn-block" disabled={saving || deleting}>
           {saving ? 'Saving…' : 'Save Profile'}
         </button>
+
+        <div className="profile-danger-zone">
+          <h4>Danger Zone</h4>
+          <p>This permanently deletes your profile and cannot be undone.</p>
+          <button
+            type="button"
+            className="btn btn-danger btn-block"
+            onClick={handleDeleteProfile}
+            disabled={deleting || saving}
+          >
+            {deleting ? 'Deleting…' : 'Delete Profile'}
+          </button>
+        </div>
       </form>
     </div>
   );
