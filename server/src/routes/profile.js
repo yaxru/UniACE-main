@@ -1,5 +1,8 @@
 const express = require('express');
 const User = require('../models/User');
+const Question = require('../models/Question');
+const Comment = require('../models/Comment');
+const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -87,6 +90,16 @@ router.get('/profile/modules/public', auth, async (req, res) => {
   }
 });
 
+// GET /api/profile/users — fetch all users for community list
+router.get('/profile/users', auth, async (req, res) => {
+  try {
+    const users = await User.find({}, 'username name role itNumber modulesByYear createdAt').sort({ createdAt: -1 });
+    res.json(users);
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // PUT /api/profile — update current user's profile
 router.put('/profile', auth, async (req, res) => {
   try {
@@ -119,6 +132,35 @@ router.put('/profile', auth, async (req, res) => {
 
     const updated = await User.findById(req.user.id).select('-password');
     res.json(updated);
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE /api/profile — delete current user's profile and related content
+router.delete('/profile', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const ownQuestions = await Question.find({ author: userId }).select('_id');
+    const ownQuestionIds = ownQuestions.map((q) => q._id);
+
+    await Comment.deleteMany({
+      $or: [
+        { author: userId },
+        { question: { $in: ownQuestionIds } },
+      ],
+    });
+    await Question.deleteMany({ author: userId });
+    await Message.deleteMany({ $or: [{ sender: userId }, { receiver: userId }] });
+    await user.deleteOne();
+
+    res.json({ message: 'Profile deleted successfully' });
   } catch {
     res.status(500).json({ message: 'Server error' });
   }
