@@ -6,6 +6,7 @@ const User = require('../models/User');
 const router = express.Router();
 const YEAR_KEYS = ['year1', 'year2', 'year3', 'year4'];
 const STUDY_PREFERENCES = ['hard', 'easy', 'neutral'];
+const ASSIGNMENT_TYPES = ['coding-project', 'document', 'general'];
 
 function parseDate(dateStr) {
   const value = new Date(dateStr);
@@ -18,7 +19,7 @@ function startOfDay(date) {
   return value;
 }
 
-function validateAssignmentInput({ yearKey, moduleName, assignmentName, dueDate, timeSlot, studyPreference }) {
+function validateAssignmentInput({ yearKey, moduleName, assignmentName, assignmentType, dueDate, timeSlot, studyPreference }) {
   if (!YEAR_KEYS.includes(yearKey)) {
     return 'Invalid year key';
   }
@@ -29,6 +30,10 @@ function validateAssignmentInput({ yearKey, moduleName, assignmentName, dueDate,
 
   if (!assignmentName || typeof assignmentName !== 'string' || !assignmentName.trim()) {
     return 'Assignment name is required';
+  }
+
+  if (assignmentType !== undefined && !ASSIGNMENT_TYPES.includes(assignmentType)) {
+    return 'Invalid assignment type';
   }
 
   if (!timeSlot || typeof timeSlot !== 'string' || !timeSlot.trim()) {
@@ -76,11 +81,12 @@ router.get('/assignment-schedules', auth, async (req, res) => {
 
 router.post('/assignment-schedules', auth, async (req, res) => {
   try {
-    const { yearKey, moduleName, assignmentName, dueDate, timeSlot, studyPreference } = req.body;
+    const { yearKey, moduleName, assignmentName, assignmentType, dueDate, timeSlot, studyPreference } = req.body;
     const validationMessage = validateAssignmentInput({
       yearKey,
       moduleName,
       assignmentName,
+      assignmentType,
       dueDate,
       timeSlot,
       studyPreference,
@@ -94,6 +100,7 @@ router.post('/assignment-schedules', auth, async (req, res) => {
       yearKey,
       moduleName: moduleName.trim(),
       assignmentName: assignmentName.trim(),
+      assignmentType: ASSIGNMENT_TYPES.includes(assignmentType) ? assignmentType : 'general',
       dueDate: parseDate(dueDate),
       timeSlot: timeSlot.trim(),
       studyPreference: STUDY_PREFERENCES.includes(studyPreference) ? studyPreference : 'neutral',
@@ -109,11 +116,12 @@ router.post('/assignment-schedules', auth, async (req, res) => {
 
 router.put('/assignment-schedules/:id', auth, async (req, res) => {
   try {
-    const { yearKey, moduleName, assignmentName, dueDate, timeSlot, studyPreference } = req.body;
+    const { yearKey, moduleName, assignmentName, assignmentType, dueDate, timeSlot, studyPreference } = req.body;
     const validationMessage = validateAssignmentInput({
       yearKey,
       moduleName,
       assignmentName,
+      assignmentType,
       dueDate,
       timeSlot,
       studyPreference,
@@ -133,6 +141,7 @@ router.put('/assignment-schedules/:id', auth, async (req, res) => {
     schedule.yearKey = yearKey;
     schedule.moduleName = moduleName.trim();
     schedule.assignmentName = assignmentName.trim();
+    schedule.assignmentType = ASSIGNMENT_TYPES.includes(assignmentType) ? assignmentType : 'general';
     schedule.dueDate = parseDate(dueDate);
     schedule.timeSlot = timeSlot.trim();
     schedule.studyPreference = STUDY_PREFERENCES.includes(studyPreference) ? studyPreference : 'neutral';

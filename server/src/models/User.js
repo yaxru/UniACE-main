@@ -6,7 +6,15 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     name: { type: String, trim: true, default: null },
     phone: { type: String, trim: true, default: null },
-    itNumber: { type: String, trim: true, default: null },
+    itNumber: {
+      type: String,
+      trim: true,
+      default: null,
+      match: [
+        /^(IT|LIC)\d+$/i,
+        "IT Number must start with IT or LIC followed by digits (e.g. IT21234567).",
+      ],
+    },
     role: { type: String, default: null },
     modulesByYear: {
       type: {

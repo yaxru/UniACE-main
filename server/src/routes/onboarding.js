@@ -22,6 +22,42 @@ router.put("/onboarding", auth, async (req, res) => {
       studyGoals,
     } = req.body;
 
+    // --- Validation ---
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ message: "Full name is required." });
+    }
+    if (itNumber && !/^(IT|LIC)\d+$/i.test(String(itNumber).trim())) {
+      return res.status(400).json({
+        message:
+          "IT Number must start with IT or LIC followed by digits (e.g. IT21234567).",
+      });
+    }
+    const isLic = itNumber && /^LIC/i.test(String(itNumber).trim());
+
+    if (!faculty) {
+      return res.status(400).json({ message: "Faculty is required." });
+    }
+    if (!year) {
+      return res.status(400).json({ message: "Year of study is required." });
+    }
+    // Fields below are only required for regular (non-LIC) students
+    if (!isLic) {
+      if (!batch) {
+        return res.status(400).json({ message: "Batch type is required." });
+      }
+      if (!studyMethod) {
+        return res.status(400).json({ message: "Study method is required." });
+      }
+      if (!studyStyle) {
+        return res.status(400).json({ message: "Study style is required." });
+      }
+      if (!Array.isArray(studyGoals) || studyGoals.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "At least one study goal is required." });
+      }
+    }
+
     // Parse modules string into a clean array
     const currentModules =
       typeof modules === "string"

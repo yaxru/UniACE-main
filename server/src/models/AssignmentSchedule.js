@@ -9,6 +9,11 @@ const assignmentScheduleSchema = new mongoose.Schema(
     },
     moduleName: { type: String, required: true, trim: true },
     assignmentName: { type: String, required: true, trim: true },
+    assignmentType: {
+      type: String,
+      enum: ['coding-project', 'document', 'general'],
+      default: 'general',
+    },
     dueDate: { type: Date, required: true },
     studyPreference: {
       type: String,
