@@ -17,7 +17,7 @@ function matchScore(group, user) {
     group.studyMethod === user.studyMethod
   )
     score += 2;
-  if (group.modules.length && user.currentModules.length) {
+  if (group.modules.length && user.currentModules?.length) {
     const overlap = group.modules.filter((m) =>
       user.currentModules.includes(m),
     );
@@ -43,7 +43,8 @@ router.get("/studygroups/suggest", auth, async (req, res) => {
 
     res.json(suggestions);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("suggest error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -56,7 +57,8 @@ router.get("/studygroups/mine", auth, async (req, res) => {
     );
     res.json(groups);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("mine error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -66,7 +68,8 @@ router.get("/studygroups", auth, async (req, res) => {
     const groups = await StudyGroup.find().populate("members", "username name");
     res.json(groups);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("list error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -117,7 +120,8 @@ router.post("/studygroups", auth, async (req, res) => {
     const populated = await group.populate("members", "username name");
     res.status(201).json(populated);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("create error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -128,11 +132,9 @@ router.post("/studygroups/:id/join", auth, async (req, res) => {
     if (!group) return res.status(404).json({ message: "Group not found" });
 
     if (group.members.length >= group.maxMembers) {
-      return res
-        .status(400)
-        .json({
-          message: `This group is full (max ${group.maxMembers} members)`,
-        });
+      return res.status(400).json({
+        message: `This group is full (max ${group.maxMembers} members)`,
+      });
     }
 
     const alreadyMember = group.members.some(
@@ -147,7 +149,8 @@ router.post("/studygroups/:id/join", auth, async (req, res) => {
     const populated = await group.populate("members", "username name");
     res.json(populated);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("join error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 

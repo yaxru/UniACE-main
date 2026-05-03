@@ -31,7 +31,7 @@ const studyGroupSchema = new mongoose.Schema(
       type: Number,
       default: 8,
       min: [2, "A group must have at least 2 members"],
-      max: [8, "A group cannot exceed 8 members"],
+      max: [20, "A group cannot exceed 20 members"],
     },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     createdBy: {

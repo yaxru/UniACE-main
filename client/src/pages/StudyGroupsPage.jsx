@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
-// Shared tag styles 
+// Shared tag styles
 const TAG_CLS = "text-xs px-2.5 py-1 rounded-full font-medium border";
-
 
 function FacultyTag({ value }) {
   if (!value) return null;
@@ -31,7 +30,7 @@ function MethodTag({ value }) {
   );
 }
 
-//  Group List Row (left panel) 
+//  Group List Row (left panel)
 function GroupRow({ group, userId, selected, onClick }) {
   const isMember = group.members.some(
     (m) => m._id === userId || m._id?.toString() === userId,
@@ -117,7 +116,7 @@ function GroupRow({ group, userId, selected, onClick }) {
   );
 }
 
-//  Group Detail Panel (right panel) 
+//  Group Detail Panel (right panel)
 function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
   if (!group) {
     return (
@@ -317,7 +316,7 @@ function GroupDetail({ group, userId, onJoin, onLeave, joining, onClose }) {
   );
 }
 
-//  Create Group Modal 
+//  Create Group Modal
 function CreateGroupModal({ onClose, onCreate, user }) {
   const [form, setForm] = useState({
     name: "",
@@ -439,9 +438,9 @@ function CreateGroupModal({ onClose, onCreate, user }) {
             className={selectCls}
           >
             <option value="">Any Study Method</option>
-            <option>Online</option>
-            <option>In-person</option>
-            <option>Both</option>
+            <option value="online">Online</option>
+            <option value="in-person">In-person</option>
+            <option value="hybrid">Hybrid</option>
           </select>
           <div className="flex items-center gap-3">
             <label className="text-sm text-gray-600 whitespace-nowrap pl-1">
@@ -497,7 +496,7 @@ function CreateGroupModal({ onClose, onCreate, user }) {
   );
 }
 
-//  Main Page 
+//  Main Page
 const TABS = ["Suggested", "My Groups", "All Groups"];
 
 export default function StudyGroupsPage() {
